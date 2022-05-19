@@ -1,8 +1,13 @@
 package org.opentripplanner.api.common;
 
+import org.apache.commons.io.IOUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.opentripplanner.api.parameter.QualifiedModeSet;
 import org.opentripplanner.model.FeedScopedId;
 import org.opentripplanner.routing.core.BicycleOptimizeType;
+import org.opentripplanner.routing.core.TraverseMode;
 import org.opentripplanner.routing.api.request.RoutingRequest;
 import org.opentripplanner.routing.api.request.BannedStopSet;
 import org.opentripplanner.standalone.server.OTPServer;
@@ -17,11 +22,18 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import java.io.IOException;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 /**
  * This class defines all the JAX-RS query parameters for a path search as fields, allowing them to 
@@ -650,8 +662,11 @@ public abstract class RoutingResource {
      * Range/sanity check the query parameter fields and build a Request object from them.
      *
      * @throws ParameterException when there is a problem interpreting a query parameter
+     * @throws org.json.simple.parser.ParseException 
+     * @throws ParseException 
+     * @throws IOException 
      */
-    protected RoutingRequest buildRequest() throws ParameterException {
+    protected RoutingRequest buildRequest() throws ParameterException, IOException, ParseException, org.json.simple.parser.ParseException {
         Router router = otpServer.getRouter();
         RoutingRequest request = router.defaultRoutingRequest.clone();
 
@@ -866,6 +881,65 @@ public abstract class RoutingResource {
         if(debugItineraryFilter != null ) {
             request.itineraryFilters.debug = debugItineraryFilter;
         }
+        
+       
+        
+        //Management of Blocked Bus Routes by Antonio        
+        request.setNumItineraries(10);
+        String resultString = null;
+        ArrayList<ChangedRoute> routes = this.takeChangedRoutesFromUrl();
+        System.out.println("Number of declared Blocked Buses: "+routes.size());
+        List<FeedScopedId> routeIds = new ArrayList<FeedScopedId>();
+        int count=0;
+        for(int i=0;i<routes.size();i++)
+        {
+     	   
+         // check the blocking DATE add eventually the route to block.
+     	   ChangedRoute current = routes.get(i);
+     	   Date requestDate = request.getDateTime();
+     	   
+  
+         	Date startDate = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).parse(current.getStartDate());
+            Date endDate = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).parse(current.getEndDate());
+       	    boolean result =  requestDate.compareTo(startDate) >= 0 && requestDate.compareTo(endDate) <= 0;
+       	    System.out.println("Start Date: "+startDate);
+       	    System.out.println("REquested Date: "+requestDate);
+       	    
+     	   
+     	   if(result) {
+     		   //add the route to the blocked routes list
+     	
+     		   String feedId = current.getFeedId();
+     		   String routeId = current.getRouteId();
+     		   System.out.println("FEED: "+feedId);
+     		   System.out.println("ROUTE: "+routeId);
+     		   
+     		   
+     		  FeedScopedId id = new FeedScopedId(feedId,routeId);
+     		  routeIds.add(id);
+     		  System.out.println("Qui gli autobus bloccati sono: "+routeIds.size());
+
+     	  
+     	   }
+     	   
+     	
+         
+   
+     	   
+        }
+       
+ 
+         System.out.println("Number of BLOCKED BUS ROUTES: "+ routeIds.size());
+        request.setBannedRoutes(routeIds); 
+  
+
+
+        
+        
+        //END ADDITION by Antonio
+        
+  
+        
 
         //getLocale function returns defaultLocale if locale is null
         request.locale = ResourceBundleSingleton.INSTANCE.getLocale(locale);
@@ -904,5 +978,42 @@ public abstract class RoutingResource {
         }
         return bannedTripMap;
     }
+    
+ // ADDED METHOD TO MANAGE BUS NOT AVAILABLE
+    
+    private ArrayList<ChangedRoute> takeChangedRoutesFromUrl() throws IOException, ParseException, org.json.simple.parser.ParseException {
+ 		// TODO Auto-generated method stub
+ 		ArrayList<ChangedRoute> changedRoutes = new ArrayList<ChangedRoute>();
+ 		
+ 		
+ 		// read from JSON file
+ 	//	String genreJson = IOUtils.toString(new URL("http://localhost/busChanges.json"));
+ 		
+ 		String genreJson = IOUtils.toString(new URL("http://139.177.202.145/wp-content/uploads/busChanges.json"));
+ 		JSONObject genreJsonObject = (JSONObject) JSONValue.parseWithException(genreJson);
+ 		// get the traffic Array
+ 		JSONArray routesArray = (JSONArray) genreJsonObject.get("routes");
+ 		//LOG.info("There are elements to parse: "+routesArray.size());
+ 			
+      	for (int i=0; i < routesArray.size(); i++){
+      		JSONObject routeData = (JSONObject) routesArray.get(i);
+      		String routeId =null, startDate = null, endDate = null, feedId=null;
+      		feedId = (String) routeData.getOrDefault("feedId", 0);
+      		
+      		routeId = (String) routeData.getOrDefault("routeId", 0);
+  	        startDate = (String) routeData.getOrDefault("startDate", 0);
+  	        endDate = (String) routeData.getOrDefault("endDate", 0);
+  	        
+  	        ChangedRoute route = new ChangedRoute();
+  	        route.setFeedId(feedId);
+  	        route.setRouteId(routeId);
+  	        route.setStartDate(startDate);
+  	        route.setEndDate(endDate);
+  
+  	       changedRoutes.add(route);
+      	}
+
+ 		return changedRoutes;
+ 	}
 
 }

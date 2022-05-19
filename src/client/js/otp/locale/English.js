@@ -53,13 +53,16 @@ otp.locale.English = {
      */
     infoWidgets : [
             {
-                title: 'About',
-                content: '<p>About this site</p>',
-                //cssClass: 'otp-contactWidget',
+	          title:"Try ROUTE",
+              content:'<p>to try ROUTE you need to upload a JSON file representing the unavailable <i>Mobility Resources</i>. Please, follow the instructions described <a href="http://139.177.202.145/wp-content/upload.html" target="_blank">HERE</a></p>'
+			},
+			{
+                title: 'About ROUTE',
+                content: '<p>Multimodal journey planners are used worldwide to support travelers in planning and executing their journeys. Generated travel plans usually involve local mobility service providers, consider some travelers&#39; preferences, and provide travelers information about the routes&#39; current status and expected delays. However, those planners cannot fully consider the special situations of individual cities when providing travel planning services. Specifically, authorities of different cities might define customizable regulations or constraints of movements in the cities (e.g., due to construction works or pandemics). Moreover, with the transformation of traditional cities into smart cities, travel planners could leverage advanced monitoring features. Finally, most planners do not consider relevant information impacting travel plans, for instance, information that might be provided by travelers (e.g., a crowded square) or by mobility service providers (e.g., changing the timetable of a bus). To address the aforementioned shortcomings, we propose <b>ROUTE</b>, a f<b>R</b>amework f<b>O</b>r c<b>U</b>s<b>T</b>omizable plan<b>E</b>rs that better serve the needs of travelers, local authorities, and mobility service providers in the dynamic ecosystem of smart cities, as compared to travel planning applications available in the marketplace.</p>',
             },
             {
-                title: 'Contact',
-                content: '<p>Comments? Contact us at...</p>'
+                title: 'Contact Us',
+                content: '<p>This study has been designed, developed, and reported by the following investigators:<ul><li>Fahed Alkhabbas, Internet of Things and People Research Center, Malmo University, Sweden - fahed.alkhabbas@mau.se</li><li>Martina De Sanctis, Gran Sasso Science Institute, L&#39;Aquila, Italy - martina.desanctis@gssi.it</li><li>Antonio Bucchiarone, Fondazione Bruno Kessler (FBK), Trento, Italy - bucchiarone@fbk.eu</li><li>Antonio Cicchetti, IDT Department, Malardalen University, Vasteras, Sweden - antonio.cicchetti@mdh.se</li><li>Romina Spalazzese, Internet of Things and People Research Center, Malmo University, Sweden - romina.spalazzese@mau.se</li><li>Paul Davidsson, Internet of Things and People Research Center, Malmo University, Sweden - paul.davidsson@mau.se </li><li>Ludovico Iovino, Gran Sasso Science Institute, L&#39;Aquila, Italy - ludovico.iovino@gssi.it </li></ul></p>'
             },
     ],
 
@@ -74,4 +77,3 @@ otp.locale.English = {
 
     CLASS_NAME : "otp.locale.English"
 };
-
